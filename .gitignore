@@ -1,0 +1,64 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# IDE and editor files
+.vscode/
+.idea/
+*.iml
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Log files
+logs/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build and dist files
+build/
+dist/
+public/build/
+
+# Test coverage files
+coverage/
+
+# TypeScript files
+*.tsbuildinfo
+*.d.ts
+
+# TypeScript compilation output
+lib/
+out/
+
+# Package files
+package-lock.json
+yarn.lock
+
+# Type definitions
+types/
+
+# TypeScript configuration files
+tsconfig.json
+tsconfig.dev.json
+tsconfig.build.json
+
+# Jest configuration files
+jest.config.js
+jest.setup.js
+
+# ESLint configuration files
+.eslintignore
+.eslintrc.json
+.eslintrc.js
+
+# Prettier configuration files
+.prettierrc.json
+.prettierrc.js
+
+# Commit message files
+COMMIT_EDITMSG
