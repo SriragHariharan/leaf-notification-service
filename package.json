@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon dist/app.js",
+    "start": "node dist/app.js"
+
   },
   "keywords": [],
   "author": "Srirag H",
