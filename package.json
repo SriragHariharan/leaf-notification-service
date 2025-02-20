@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "nodemon dist/app.js",
     "start": "node dist/app.js"
-
   },
   "keywords": [],
   "author": "Srirag H",
@@ -18,12 +17,13 @@
     "express": "^4.21.2",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.10.1",
     "redis": "^4.7.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
     "@types/amqplib": "^0.10.6",
+    "@types/express": "^5.0.0",
     "@types/http-errors": "^2.0.4",
     "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^22.12.0",

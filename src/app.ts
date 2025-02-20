@@ -2,11 +2,13 @@ import express,  { NextFunction, Request, Response } from 'express';
 import 'dotenv/config'
 import createHttpError from 'http-errors';
 import bodyParser from 'body-parser';
+import connectToDatabase from './configs/database';
 
 //rabbitmq consumer file
 // import "./messaging/rabbitmq/user-events.consumer"
 
 const app = express();
+connectToDatabase();
 
 /* logger logs handling */
 app.use((_req: Request, _res: Response, next: NextFunction) => {
@@ -17,8 +19,8 @@ app.use((_req: Request, _res: Response, next: NextFunction) => {
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-app.get("/test", (req, res) => res.send("Hello World from Notification service") );
 
+//add endpoints here
 
 //handle endpoints not found: 404
 app.use(async (_req: Request, _res: Response, next: NextFunction) => {
