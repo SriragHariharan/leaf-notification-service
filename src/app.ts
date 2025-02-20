@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import connectToDatabase from './configs/database';
 
 //rabbitmq consumer file
-import "./messaging/rabbitmq/user-events.consumer"
+import "./messaging/rabbitmq/consumers";
 
 const app = express();
 connectToDatabase();
