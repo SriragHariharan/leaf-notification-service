@@ -3,12 +3,18 @@ import 'dotenv/config'
 import createHttpError from 'http-errors';
 import bodyParser from 'body-parser';
 import connectToDatabase from './configs/database';
+import { createServer } from 'http';
+import { initializeSocket } from './socket';
 
 //rabbitmq consumer file
 import "./messaging/rabbitmq/consumers";
 
 const app = express();
+const httpServer = createServer(app);
 connectToDatabase();
+
+/* Initialize Socket.IO */
+const io = initializeSocket(httpServer);
 
 /* logger logs handling */
 app.use((_req: Request, _res: Response, next: NextFunction) => {
@@ -38,4 +44,5 @@ app.use((err: any, _req:Request, res:Response, _next: NextFunction) => {
   })
 })
 
-app.listen(process.env.PORT, () => console.log("server running at " + process.env.PORT))
+// Start both Express and Socket.IO on the same server
+httpServer.listen(process.env.PORT, () => console.log(`Server running at ${process.env.PORT}`));
