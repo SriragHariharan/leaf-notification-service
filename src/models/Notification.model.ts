@@ -2,9 +2,8 @@ import mongoose from "mongoose";
 
 const notificationSchema = new mongoose.Schema(
     {
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+        userID: {
+            type: String,
             required: true,
         },
         content: {
@@ -25,9 +24,8 @@ const notificationSchema = new mongoose.Schema(
             default: false,
         },
         interactedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: false,
+            type: String,
+            required: true,
         },
         postId: {
             type: String,

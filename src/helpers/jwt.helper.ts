@@ -43,3 +43,18 @@ export const verifyToken = (token: string) => {
   }
 };
 
+export function signAccessToken(userID: string): string {
+  try {
+    const payload = {}
+    const secret = process.env.ACCESS_TOKEN_SECRET!;
+    const options = {
+        expiresIn: 300,
+        issuer: 'leaf.com',
+        audience: userID,
+    };
+    return jwt.sign(payload, secret, options)
+  } catch (error) {
+      throw createHttpError(500, "An unexpected error occurred");    
+  }
+}
+
