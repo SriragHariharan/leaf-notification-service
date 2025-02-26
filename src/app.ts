@@ -8,6 +8,7 @@ import { initializeSocket } from './socket';
 
 //rabbitmq consumer file
 import "./messaging/rabbitmq/consumers";
+import notificationRouter from './routes/notification.routes';
 
 const app = express();
 const httpServer = createServer(app);
@@ -27,6 +28,7 @@ app.use(bodyParser.json())
 
 
 //add endpoints here
+app.use("/", notificationRouter );
 
 //handle endpoints not found: 404
 app.use(async (_req: Request, _res: Response, next: NextFunction) => {

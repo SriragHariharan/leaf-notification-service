@@ -69,7 +69,7 @@ async function processMessage(message: { type: string, postID: string; postOwner
         /* fanning out the notification to all his friends */
         console.log(friendsList, " ::: friends list")
         friendsList.forEach(async (friendID: string) => {   
-            const newNotification = new Notification({ userID: friendID, content: notificationMessage, type: "post", interactedBy: message?.interactedUserID, postId: message?.postID });
+            const newNotification = new Notification({ userID: friendID, content: notificationMessage, type: "comment", interactedBy: message?.interactedUserID, postId: message?.postID });
             await newNotification.save();
             // Emit the notification to the room corresponding to the friendID
             io.to(friendID).emit('post_notification', newNotification);
