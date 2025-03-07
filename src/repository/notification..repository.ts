@@ -8,7 +8,7 @@ class NotificationRepository implements INotificationRepository{
     /* get all notifications for a specific user */
     async getNotifications(userID: string): Promise<any[]> {
         try {
-            const notifications = await Notification.find({ userID: userID, isDeleted: false });
+            const notifications = await Notification.find({ userID: userID, isDeleted: false }).sort({ createdAt: -1 });
             return notifications;
         } catch (error) {
             throw createHttpError(500, "Unable to fetch notifications");
