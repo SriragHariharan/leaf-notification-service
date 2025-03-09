@@ -18,12 +18,13 @@ export const initializeSocket = (httpServer: HttpServer) => {
         socket.on("authenticate", (data) => {
             try {
                 const decodedToken = verifyToken(data?.token);
-                if (!decodedToken || !decodedToken?.aud) {
+
+                if (typeof decodedToken !== "object" || !decodedToken?.aud) {
                     console.error("Invalid token");
                     return;
                 }
 
-                const roomId = decodedToken?.aud;
+                const roomId = decodedToken.aud;
                 socket.join(roomId);
                 console.log(`✅ Client ${socket.id} joined room ${roomId}`);
 
@@ -33,6 +34,7 @@ export const initializeSocket = (httpServer: HttpServer) => {
                 console.error("Authentication failed:", error);
             }
         });
+
 
         socket.on("disconnect", () => {
             const rooms = Object.keys(socket.rooms);
