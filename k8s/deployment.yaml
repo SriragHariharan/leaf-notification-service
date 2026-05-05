@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leaf-notification-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leaf-notification-service
+  template:
+    metadata:
+      labels:
+        app: leaf-notification-service
+    spec:
+      containers:
+        - name: leaf-notification-service
+          image: sriraghariharan/leaf-notification-service:v1
+          ports:
+            - containerPort: 2005
+          envFrom:
+            - configMapRef:
+                name: leaf-notification-service-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: leaf-notification-service
+spec:
+  type: ClusterIP
+  selector:
+    app: leaf-notification-service
+  ports:
+    - protocol: TCP
+      port: 2005
+      targetPort: 2005

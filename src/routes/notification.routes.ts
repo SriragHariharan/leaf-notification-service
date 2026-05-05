@@ -26,6 +26,7 @@ notificationRouter.delete("/", validateAccessToken, (req: Request, res: Response
     notificationController.deleteNotifications(req, res, next); 
 })
 
+//get count of unread notifications
 notificationRouter.get("/count", validateAccessToken, (req: Request, res: Response, next: NextFunction) => {
     notificationController.getUnreadNotificationsCount(req, res, next);
 })
