@@ -6,8 +6,7 @@ import connectToDatabase from './configs/database';
 import { createServer } from 'http';
 import { initializeSocket } from './socket';
 
-//rabbitmq consumer file
-import "./messaging/rabbitmq/consumers";
+import "./messaging/kafka/consumers";
 import notificationRouter from './routes/notification.routes';
 
 const app = express();
