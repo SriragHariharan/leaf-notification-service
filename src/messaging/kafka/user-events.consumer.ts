@@ -6,44 +6,36 @@ import kafka from "./kafka";
 const TOPIC = "user.events";
 const consumer = kafka.consumer({ groupId: "notification-service-user-events" });
 
-async function processUserData(userData: {
+interface UserEventPayload {
   userID?: string;
   username?: string;
-  profilePicture?: string;
-  type?: string;
-}): Promise<boolean> {
+  profilePicture?: string | null;
+}
+
+async function processUserData(userData: UserEventPayload): Promise<boolean> {
   if (!userData?.userID) {
     logger.error("[Kafka] Invalid user data: Missing userID");
     return false;
   }
 
-  try {
-    if (userData.type === "user") {
-      if (!userData.username) {
-        logger.error("[Kafka] Invalid user data: Missing username");
-        return false;
-      }
-      const newUser = new User({
-        userID: userData.userID,
-        username: userData.username,
-        profilePic: userData.profilePicture,
-      });
-      await newUser.save();
-      logger.info(`[Database] Successfully created user with userID: ${userData.userID}`);
-      return true;
-    }
-    if (userData.type === "username" && userData.username) {
-      await User.updateOne({ userID: userData.userID }, { $set: { username: userData.username } });
-      logger.info(`[Database] Successfully updated username for userID: ${userData.userID}`);
-      return true;
-    }
-    if (userData.type === "picture" && userData.profilePicture) {
-      await User.updateOne({ userID: userData.userID }, { $set: { profilePic: userData.profilePicture } });
-      logger.info(`[Database] Successfully updated profile picture for userID: ${userData.userID}`);
-      return true;
-    }
-    logger.warn(`[Kafka] Unknown user event type: ${userData.type}`);
+  if (!userData.username) {
+    logger.error("[Kafka] Invalid user data: Missing username");
     return false;
+  }
+
+  try {
+    await User.findOneAndUpdate(
+      { userID: userData.userID },
+      {
+        $set: {
+          username: userData.username,
+          profilePic: userData.profilePicture ?? null,
+        },
+      },
+      { upsert: true, new: true }
+    );
+    logger.info(`[Database] Successfully upserted user with userID: ${userData.userID}`);
+    return true;
   } catch (error) {
     logger.error(`[Kafka] Error processing user event for userID: ${userData.userID}`, { error });
     return false;
@@ -52,7 +44,7 @@ async function processUserData(userData: {
 
 async function onMessage({ message }: EachMessagePayload): Promise<void> {
   const raw = message.value?.toString() ?? "";
-  let userData: { userID?: string; username?: string; profilePicture?: string; type?: string };
+  let userData: UserEventPayload;
   try {
     userData = JSON.parse(raw);
   } catch {

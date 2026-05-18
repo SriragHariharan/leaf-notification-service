@@ -8,10 +8,10 @@ const consumer = kafka.consumer({ groupId: "notification-service-otp" });
 
 async function processOtp(otpData: { type?: string; email?: string; otp?: number | string }): Promise<void> {
   if (otpData?.type === "otp" && otpData.email) {
-    sendOTPEmail(otpData.email, String(otpData.otp));
+    //sendOTPEmail(otpData.email, String(otpData.otp));
     logger.info(`[Kafka] OTP email triggered for ${otpData.email}`);
   } else if (otpData?.type === "link" && otpData.email) {
-    sendPasswordResetLink(otpData.email, String(otpData.otp));
+    //sendPasswordResetLink(otpData.email, String(otpData.otp));
     logger.info(`[Kafka] Password reset link triggered for ${otpData.email}`);
   } else {
     logger.warn("[Kafka] skipped invalid otp message");
