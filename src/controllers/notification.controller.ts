@@ -32,6 +32,24 @@ class NotificationController {
         }
     }
 
+    async markNotificationAsRead(req: Request, res: Response, next: NextFunction) {
+        logger.debug(`Entering markNotificationAsRead method.`, {
+            method: "markNotificationAsRead",
+            layer: "controller",
+        });
+        try {
+            const userID = req?.user?.aud;
+            const notificationId = req.params.notificationId;
+            const notification = await this.notificationService.markNotificationAsRead(
+                userID,
+                notificationId,
+            );
+            res.status(200).json({ success: true, message: null, data: { notification } });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     /* Mark all notifications as read for the authenticated user */
     async markNotificationsAsRead(req: Request, res: Response, next: NextFunction) {
         logger.debug(`Entering markNotificationsAsRead method.`, { method: "markNotificationsAsRead", layer: "controller" });

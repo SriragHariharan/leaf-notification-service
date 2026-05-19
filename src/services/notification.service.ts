@@ -34,6 +34,29 @@ class NotificationService implements INotificationService {
         }
     }
 
+    async markNotificationAsRead(userID: string, notificationId: string): Promise<Notification> {
+        logger.debug(`Entering markNotificationAsRead method.`, {
+            method: "markNotificationAsRead",
+            layer: "service",
+        });
+        try {
+            const notification = await this.notificationRepository.markNotificationAsRead(
+                userID,
+                notificationId,
+            );
+            if (!notification) {
+                throw createHttpError(404, "Notification not found");
+            }
+            return notification;
+        } catch (error) {
+            if (createHttpError.isHttpError(error)) {
+                throw error;
+            }
+            logger.error(`Unexpected error in markNotificationAsRead`, { error, layer: "service" });
+            throw createHttpError(500, "Unable to mark notification as read");
+        }
+    }
+
     /* Mark all notifications as read for a specific user */
     async markNotificationsAsRead(userID: string): Promise<void> {
         logger.debug(`Entering markNotificationsAsRead method. Param: ${userID}`, { method: "markNotificationsAsRead", layer: "service" });

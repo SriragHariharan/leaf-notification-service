@@ -4,10 +4,18 @@ import { User } from "../../models/User.model";
 import { Notification } from "../../models/Notification.model";
 import fetchFriendID from "../../helpers/fetchFriends";
 import { io } from "../../socket";
+import logger from "../../helpers/logger";
 import kafka from "./kafka";
 
-const TOPICS = ["notification.post.created", "post.liked", "post.commented"] as const;
+const TOPIC = "notification.post.created";
 const consumer = kafka.consumer({ groupId: "notification-service-post-notifs" });
+
+interface PostCreatedPayload {
+  type: string;
+  postID: string;
+  postOwnerID: string;
+  interactedUserID: string;
+}
 
 async function getInteractedUserDetails(userId: string) {
   const userDetails = await User.findOne({ userID: userId });
@@ -17,69 +25,62 @@ async function getInteractedUserDetails(userId: string) {
   return userDetails;
 }
 
-async function processMessage(message: {
-  type: string;
-  postID: string;
-  postOwnerID: string;
-  interactedUserID: string;
-}): Promise<void> {
+async function processPostCreated(message: PostCreatedPayload): Promise<void> {
   const userDetails = await getInteractedUserDetails(message.interactedUserID);
+  const notificationMessage = `${userDetails.username} added a new post`;
+  const friendsList = await fetchFriendID(message.postOwnerID);
+  const dedupeBase = `post_created:${message.postID}`;
 
-  if (message.type === "post_created") {
-    const notificationMessage = `${userDetails.username} added a new post`;
-    const friendsList = await fetchFriendID(message.postOwnerID);
-    for (const friendID of friendsList) {
-      const newNotification = new Notification({
-        userID: friendID,
-        content: notificationMessage,
-        type: "comment",
-        interactedBy: message.interactedUserID,
-        postId: message.postID,
-      });
-      await newNotification.save();
-      io.to(friendID).emit("post_notification", newNotification);
+  for (const friendID of friendsList) {
+    const dedupeKey = `${dedupeBase}:${friendID}`;
+    const existing = await Notification.findOne({ dedupeKey });
+    if (existing) {
+      continue;
     }
-  } else if (message.type === "post_commented") {
-    const notificationMessage = `${userDetails.username} commented on your post`;
+
     const newNotification = new Notification({
-      userID: message.postOwnerID,
+      userID: friendID,
       content: notificationMessage,
       type: "post",
       interactedBy: message.interactedUserID,
       postId: message.postID,
+      entityId: message.postID,
+      entityType: "post",
+      dedupeKey,
     });
     await newNotification.save();
-    io.to(message.postOwnerID).emit("post_notification", newNotification);
+    io.to(friendID).emit("post_notification", newNotification);
   }
 }
 
 async function onMessage({ message }: EachMessagePayload): Promise<void> {
   const raw = message.value?.toString() ?? "";
-  let payload: { type: string; postID: string; postOwnerID: string; interactedUserID: string };
+
+  let payload: PostCreatedPayload;
   try {
     payload = JSON.parse(raw);
   } catch {
-    console.warn("[Kafka] skipped invalid post notification message");
+    logger.warn("[kafka:notification.post.created] skipped invalid JSON message");
     return;
   }
 
   try {
-    await processMessage(payload);
+    if (payload.type === "post_created") {
+      await processPostCreated(payload);
+    }
   } catch (error) {
-    console.error("Error processing post notification:", error);
+    logger.error("Error processing post notification:", { error });
   }
 }
 
 async function startPostNotificationsConsumer(): Promise<void> {
   try {
     await consumer.connect();
-    for (const topic of TOPICS) {
-      await consumer.subscribe({ topic, fromBeginning: true });
-    }
+    await consumer.subscribe({ topic: TOPIC, fromBeginning: true });
     await consumer.run({ eachMessage: onMessage });
-    console.log("Post notification consumer started");
+    logger.info("[kafka:notification.post.created] consumer started");
   } catch (error) {
-    console.error("Error starting post notification consumer:", error);
+    logger.error("Error starting post notification consumer:", { error });
   }
 }
 

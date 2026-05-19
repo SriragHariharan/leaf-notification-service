@@ -30,11 +30,28 @@ const notificationSchema = new mongoose.Schema(
         postId: {
             type: String,
             required: false,
-        }
+        },
+        entityId: {
+            type: String,
+            required: false,
+        },
+        entityType: {
+            type: String,
+            required: false,
+            enum: ["post", "friend_request"],
+        },
+        dedupeKey: {
+            type: String,
+            required: true,
+            unique: true,
+        },
     },
     {
         timestamps: true,
     }
 );
+
+notificationSchema.index({ userID: 1, createdAt: -1 });
+notificationSchema.index({ dedupeKey: 1 }, { unique: true });
 
 export const Notification = mongoose.model("Notification", notificationSchema);

@@ -16,6 +16,11 @@ notificationRouter.get("/", validateAccessToken, (req: Request, res: Response, n
     notificationController.getNotifications(req, res, next);
 })
 
+//mark a single notification as read
+notificationRouter.patch("/:notificationId/read", validateAccessToken, (req: Request, res: Response, next: NextFunction) => {
+    notificationController.markNotificationAsRead(req, res, next);
+})
+
 //mark all notifications as read
 notificationRouter.put("/", validateAccessToken, (req: Request, res: Response, next: NextFunction) => {
     notificationController.markNotificationsAsRead(req, res, next);

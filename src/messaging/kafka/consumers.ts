@@ -1,4 +1,5 @@
 import "./user-events.consumer";
 import "./otp.consumer";
-import "./friend-req.consumer";
+import "./consumers/friendship-events.consumer";
+import "./consumers/interaction-events.consumer";
 import "./post-notifs.consumer";
