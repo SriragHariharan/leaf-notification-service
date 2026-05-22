@@ -7,9 +7,10 @@ import {
 } from "../interface/notification.interface";
 import { Notification as NotificationModel } from "../models/Notification.model";
 import { User } from "../models/User.model";
-import logger from "../helpers/logger";
-
-function toNotification(doc: Record<string, unknown>, actor?: NotificationActor): Notification {
+function toNotification(
+  doc: Record<string, unknown>,
+  actor?: NotificationActor,
+): Notification {
   return {
     id: String(doc._id),
     userID: String(doc.userID),
@@ -30,19 +31,17 @@ function toNotification(doc: Record<string, unknown>, actor?: NotificationActor)
 
 class NotificationRepository implements INotificationRepository {
   async getNotifications(userID: string): Promise<Notification[]> {
-    logger.debug(`Entering getNotifications method. Param: ${userID}`, {
-      method: "getNotifications",
-      layer: "repository",
-    });
     try {
       const docs = await NotificationModel.find({ userID, isDeleted: false })
         .sort({ createdAt: -1 })
         .lean();
 
       const actorIds = [...new Set(docs.map((d) => String(d.interactedBy)))];
+
       const users = await User.find({ userID: { $in: actorIds } })
         .select("userID username profilePic")
         .lean();
+
       const userMap = new Map(
         users.map((u) => [
           String(u.userID),
@@ -51,13 +50,12 @@ class NotificationRepository implements INotificationRepository {
       );
 
       return docs.map((doc) =>
-        toNotification(doc as Record<string, unknown>, userMap.get(String(doc.interactedBy))),
+        toNotification(
+          doc as Record<string, unknown>,
+          userMap.get(String(doc.interactedBy)),
+        ),
       );
     } catch (error) {
-      logger.error(`Unexpected error in getNotifications. Param: ${userID}`, {
-        error,
-        layer: "repository",
-      });
       throw createHttpError(500, "Unable to fetch notifications");
     }
   }
@@ -66,7 +64,10 @@ class NotificationRepository implements INotificationRepository {
     input: CreateNotificationInput,
   ): Promise<{ notification: Notification; isNew: boolean } | null> {
     try {
-      const existing = await NotificationModel.findOne({ dedupeKey: input.dedupeKey }).lean();
+      const existing = await NotificationModel.findOne({
+        dedupeKey: input.dedupeKey,
+      }).lean();
+
       if (existing) {
         return {
           notification: toNotification(existing as Record<string, unknown>),
@@ -93,8 +94,12 @@ class NotificationRepository implements INotificationRepository {
       };
     } catch (error: unknown) {
       const mongoError = error as { code?: number };
+
       if (mongoError?.code === 11000) {
-        const existing = await NotificationModel.findOne({ dedupeKey: input.dedupeKey }).lean();
+        const existing = await NotificationModel.findOne({
+          dedupeKey: input.dedupeKey,
+        }).lean();
+
         return existing
           ? {
               notification: toNotification(existing as Record<string, unknown>),
@@ -102,13 +107,15 @@ class NotificationRepository implements INotificationRepository {
             }
           : null;
       }
-      logger.error("Failed to create notification", { error, dedupeKey: input.dedupeKey });
       throw error;
     }
   }
 
   async markNotificationsAsRead(userID: string): Promise<void> {
-    await NotificationModel.updateMany({ userID, isDeleted: false }, { isRead: true });
+    await NotificationModel.updateMany(
+      { userID, isDeleted: false },
+      { isRead: true },
+    );
   }
 
   async markNotificationAsRead(
@@ -133,7 +140,11 @@ class NotificationRepository implements INotificationRepository {
   }
 
   async getUnreadNotificationsCount(userID: string): Promise<number> {
-    return NotificationModel.countDocuments({ userID, isRead: false, isDeleted: false });
+    return NotificationModel.countDocuments({
+      userID,
+      isRead: false,
+      isDeleted: false,
+    });
   }
 }
 

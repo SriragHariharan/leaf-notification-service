@@ -4,7 +4,6 @@ import { User } from "../../models/User.model";
 import { Notification } from "../../models/Notification.model";
 import fetchFriendID from "../../helpers/fetchFriends";
 import { io } from "../../socket";
-import logger from "../../helpers/logger";
 import kafka from "./kafka";
 
 const TOPIC = "notification.post.created";
@@ -33,7 +32,9 @@ async function processPostCreated(message: PostCreatedPayload): Promise<void> {
 
   for (const friendID of friendsList) {
     const dedupeKey = `${dedupeBase}:${friendID}`;
+
     const existing = await Notification.findOne({ dedupeKey });
+
     if (existing) {
       continue;
     }
@@ -48,7 +49,9 @@ async function processPostCreated(message: PostCreatedPayload): Promise<void> {
       entityType: "post",
       dedupeKey,
     });
+
     await newNotification.save();
+
     io.to(friendID).emit("post_notification", newNotification);
   }
 }
@@ -60,7 +63,6 @@ async function onMessage({ message }: EachMessagePayload): Promise<void> {
   try {
     payload = JSON.parse(raw);
   } catch {
-    logger.warn("[kafka:notification.post.created] skipped invalid JSON message");
     return;
   }
 
@@ -69,7 +71,6 @@ async function onMessage({ message }: EachMessagePayload): Promise<void> {
       await processPostCreated(payload);
     }
   } catch (error) {
-    logger.error("Error processing post notification:", { error });
   }
 }
 
@@ -78,9 +79,7 @@ async function startPostNotificationsConsumer(): Promise<void> {
     await consumer.connect();
     await consumer.subscribe({ topic: TOPIC, fromBeginning: true });
     await consumer.run({ eachMessage: onMessage });
-    logger.info("[kafka:notification.post.created] consumer started");
   } catch (error) {
-    logger.error("Error starting post notification consumer:", { error });
   }
 }
 

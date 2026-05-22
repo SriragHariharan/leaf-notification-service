@@ -3,4 +3,6 @@ import { EventNotificationService } from "../../services/event-notification.serv
 
 const notificationRepository = new NotificationRepository();
 
-export const eventNotificationService = new EventNotificationService(notificationRepository);
+export const eventNotificationService = new EventNotificationService(
+  notificationRepository,
+);

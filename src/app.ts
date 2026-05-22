@@ -6,8 +6,10 @@ import connectToDatabase from './configs/database';
 import { createServer } from 'http';
 import { initializeSocket } from './socket';
 
+
 import "./messaging/kafka/consumers";
 import notificationRouter from './routes/notification.routes';
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -16,21 +18,16 @@ connectToDatabase();
 /* Initialize Socket.IO */
 const io = initializeSocket(httpServer);
 
-/* logger logs handling */
-app.use((_req: Request, _res: Response, next: NextFunction) => {
-//   logger.info(`Incoming request`, { method: req.method, url: req.url });
-  next();
-});
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-
 
 //add endpoints here
 app.use("/", notificationRouter );
 
 //handle endpoints not found: 404
 app.use(async (_req: Request, _res: Response, next: NextFunction) => {
+
   next(createHttpError.NotFound("Route not found"))
 })
 
