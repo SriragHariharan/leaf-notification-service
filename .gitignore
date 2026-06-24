@@ -49,7 +49,7 @@ yarn.lock
 types/
 
 # TypeScript configuration files
-tsconfig.json
+# tsconfig.json
 tsconfig.dev.json
 tsconfig.build.json
 
