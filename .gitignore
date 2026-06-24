@@ -41,10 +41,6 @@ coverage/
 lib/
 out/
 
-# Package files
-package-lock.json
-yarn.lock
-
 # Type definitions
 types/
 
