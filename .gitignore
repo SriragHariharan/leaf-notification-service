@@ -2,7 +2,7 @@
 node_modules/
 .dockerignore
 k8s/configmap.yaml
-
+ca.pem
 # Environment variables
 .env
 .env.local

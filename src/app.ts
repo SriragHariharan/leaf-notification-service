@@ -24,6 +24,9 @@ app.use(bodyParser.json())
 
 //add endpoints here
 app.use("/", notificationRouter );
+app.use("/test", (_req: Request, res: Response) => {
+  res.send({ message: "Notification service up and running." });
+});
 
 //handle endpoints not found: 404
 app.use(async (_req: Request, _res: Response, next: NextFunction) => {
